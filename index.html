@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>スプラトゥーン3 ブキルーレット</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Fullscreen Status Bar -->
+  <div id="fullscreen-status-bar" style="display: none;">
+    <div id="server-status" class="status-indicator status-item" style="display: none;">
+      <div class="status-dot"></div>
+    </div>
+    <div id="battery-status" class="status-item">
+      <span id="battery-level"></span>
+      <span id="battery-icon-wrapper">
+        <svg id="battery-icon-charging" style="display: none;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        <span id="battery-icon"></span>
+      </span>
+    </div>
+  </div>
+  <div class="app">
+    <header>
+      <h1 data-i18n-key="app-title">スプラトゥーン3｜ブキルーレット</h1>
+    </header>
+
+    <div class="main-controls card">
+      <div class="main-controls-left">
+        <div class="pill host-control">
+          <label for="playerCount" style="margin-right: 8px; cursor: pointer;" data-i18n-key="player-count">プレイヤー数</label>
+          <input id="playerCount" type="number" min="1" max="8" value="1">
+        </div>
+        <button id="spinBtn" class="btn host-control" data-i18n-aria-label="spin" data-i18n-key="spin">回す</button>
+        <label class="switch pill host-control" data-i18n-title="no-repeat-title" title="有効にすると、一度出たブキは履歴をリセットするまで抽選対象から除外されます">
+          <input id="noRepeat" type="checkbox" />
+          <span data-i18n-key="no-repeat">重複なし</span>
+        </label>
+        <button id="resetBtn" class="btn danger host-control" data-i18n-aria-label="reset" data-i18n-key="reset">リセット</button>
+      </div>
+      <div class="main-controls-right">
+        <button id="settingsBtn" class="btn secondary icon" data-i18n-title="settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+        <button id="fullscreenBtn" class="btn secondary icon" data-i18n-title="fullscreen" data-i18n-aria-label="fullscreen-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="card" aria-live="polite">
+        <div class="display">
+          <div id="resultContainer" class="result-container">
+            <div id="resultName" class="name" data-i18n-key="reset-display-name">準備OK</div>
+            <div id="resultDetails" class="details" data-i18n-key="reset-display-class">プレイヤー数を選択して「回す」を押してください</div>
+          </div>
+          <div class="ticker"></div>
+        </div>
+        <!-- ▼ここから追加：確率表 -->
+        <div id="probSection" class="card" style="margin-top:12px;">
+          <strong data-i18n-key="prob-title">各ブキの排出確率</strong>
+          <div id="probTableWrap" class="custom-scrollbar" style="max-height:220px;overflow:auto;margin-top:8px;">
+            <table id="probTable" style="width:100%;border-collapse:collapse;font-size:13px;">
+              <!-- 動的生成 -->
+            </table>
+          </div>
+        </div>
+        <!-- ▲ここまで追加 -->
+        <div id="filter-container" class="card" style="margin-top:12px">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+            <strong data-i18n-key="filter-title">ブキ絞り込み</strong>
+            <div id="preset-dropdown-container" class="dropdown-container">
+              <button id="preset-menu-btn" class="btn secondary" data-i18n-key="settings-presets-title" style="padding: 4px 10px; font-size: 13px;"></button>
+              <div id="preset-menu" class="dropdown-menu"></div>
+            </div>
+          </div>
+          <div id="classFilters" class="grid custom-scrollbar"></div>
+          <div id="paletteFilters" class="grid custom-scrollbar" style="margin-top: 16px;"></div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <!-- History Section -->
+        <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom:8px;">
+          <strong data-i18n-key="history-title">履歴</strong>
+          <span id="historyCount" class="muted">0 件</span>
+        </div>
+        <div id="history" class="history custom-scrollbar">
+          <div class="empty" data-i18n-key="history-empty">まだ結果がありません</div>
+        </div>
+      </aside>
+    </div>
+
+    <footer data-i18n-key="footer-text" data-i18n-target="innerHTML">
+      このツールは<a href="https://github.com/Yasaitachi/Splatoon3-WeaponRoulette-Online" target="_blank" class="link">GitHub</a>にて無料で公開しています。不明点やバグ報告は<a href="https://discord.gg/ShjRzZ7FBa" target="_blank" class="link">サポートサーバー</a>まで。
+    </footer>
+
+    <div id="settingsModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content card">
+        <div class="modal-header">
+          <h2 data-i18n-key="settings-title">設定</h2>
+          <button id="closeSettingsBtn" class="btn icon secondary" data-i18n-aria-label="settings-close" title="設定を閉じる">&times;</button>
+        </div>
+        <div class="modal-body custom-scrollbar">
+          <div class="settings-section">
+            <div class="setting-item">
+              <strong data-i18n-key="settings-theme">テーマ</strong>
+              <div class="setting-control">
+                <label class="chip"><input type="radio" name="theme" value="system"> <span data-i18n-key="theme-system">システム</span></label>
+                <label class="chip"><input type="radio" name="theme" value="light"> <span data-i18n-key="theme-light">ライト</span></label>
+                <label class="chip"><input type="radio" name="theme" value="dark"> <span data-i18n-key="theme-dark">ダーク</span></label>
+              </div>
+            </div>
+            <div class="setting-item">
+              <strong data-i18n-key="settings-language">言語</strong>
+              <div class="setting-control">
+                <label class="chip"><input type="radio" name="language" value="ja"> <span data-i18n-key="language-ja">日本語</span></label>
+                <label class="chip"><input type="radio" name="language" value="en"> <span data-i18n-key="language-en">English</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="settings-section">
+            <h3 data-i18n-key="settings-general-title">一般設定</h3>
+            <div class="setting-item row">
+              <label for="autoCopy" data-i18n-key="settings-auto-copy">結果をクリップボードに自動コピー</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="autoCopy">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <p class="muted small" data-i18n-key="settings-auto-copy-help">抽選完了後、結果をテキスト形式でクリップボードにコピーします。</p>
+            <div class="setting-item row">
+              <label for="streamerMode" data-i18n-key="settings-streamer-mode">配信者モード</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="streamerMode">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <p class="muted small" data-i18n-key="settings-streamer-mode-help">ルームIDやパスワードを画面上で隠し、配信中の意図しない情報漏洩を防ぎます。コピーボタンは通常通り機能します。</p>
+            <div class="setting-item row" id="wakeLockSetting" style="display: none;">
+              <label for="preventSleep" data-i18n-key="settings-prevent-sleep">画面のスリープを防止</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="preventSleep">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <p class="muted small" id="wakeLockHelp" style="display: none;" data-i18n-key="settings-prevent-sleep-help">このページを開いている間、端末がスリープ状態になるのを防ぎます。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="realtimeModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content card">
+        <div class="modal-header">
+          <h2 data-i18n-key="realtime-title">オンライン設定</h2>
+          <button id="closeRealtimeBtn" class="btn icon secondary" data-i18n-aria-label="settings-close" title="設定を閉じる">&times;</button>
+        </div>
+        <div class="modal-body">
+        <!-- ▼▼▼ ここから追加 ▼▼▼ -->
+        <div class="settings-section">
+          <h3 data-i18n-key="public-rooms-list-title">公開中のルームリスト</h3>
+          <div id="public-rooms-container" class="table-container custom-scrollbar" style="max-height: 250px;">
+            <table id="public-rooms-table" class="admin-table">
+              <thead>
+                <tr>
+                  <th data-i18n-key="admin-room-host">ホスト</th>
+                  <th data-i18n-key="admin-room-players">人数</th>
+                  <th data-i18n-key="admin-room-actions">操作</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- ▲▲▲ ここまで追加 ▲▲▲ -->
+
+          <div class="modal-divider"><span data-i18n-key="or-divider">または</span></div>
+
+          <div class="settings-section">
+            <h3 data-i18n-key="realtime-join-by-id-title">ルームIDで参加</h3>
+            <div class="setting-item">
+              <label for="joinRoomIdInput" data-i18n-key="realtime-room-id">ルームID</label>
+              <input type="text" id="joinRoomIdInput" class="input-text" data-i18n-placeholder="realtime-room-id-placeholder" maxlength="12">
+            </div>
+            <div id="joinRoomPasswordContainer" class="setting-item" style="display: none;">
+              <label for="joinRoomPasswordInput" data-i18n-key="realtime-room-password">パスワード (任意)</label>
+              <input type="text" id="joinRoomPasswordInput" class="input-text" data-i18n-placeholder="realtime-password-placeholder">
+            </div>
+            <button id="joinRoomByIdBtn" class="btn" data-i18n-key="realtime-join-btn">参加する</button>
+          </div>
+
+          <div class="modal-divider"><span data-i18n-key="or-divider">または</span></div>
+          <div class="settings-section">
+            <h3 data-i18n-key="realtime-create-title">新しいルームを作成</h3>
+            <div class="setting-item row">
+                <label for="createRoomWithPassword" data-i18n-key="realtime-set-password">パスワードを設定</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="createRoomWithPassword">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button id="createRoomBtn" class="btn" data-i18n-key="realtime-create-btn">新しいルームを作成</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="playerSettingsModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content card">
+        <div class="modal-header">
+          <h2 data-i18n-key="player-settings-title">プレイヤー設定</h2>
+          <button id="closePlayerSettingsBtn" class="btn icon secondary" data-i18n-aria-label="settings-close" title="設定を閉じる">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-item">
+            <label for="settingsPlayerNameInput" data-i18n-key="realtime-player-name-placeholder">プレイヤー名</label>
+            <input type="text" id="settingsPlayerNameInput" class="input-text" data-i18n-placeholder="realtime-player-name-placeholder" maxlength="20">
+          </div>
+          <div class="setting-item">
+            <label for="settingsPlayerBioInput" data-i18n-key="player-bio-label">自己紹介</label>
+            <textarea id="settingsPlayerBioInput" class="input-text" data-i18n-placeholder="player-bio-placeholder" maxlength="100" rows="3"></textarea>
+          </div>
+          <div class="setting-item">
+            <label for="settingsFavoriteWeaponInput" data-i18n-key="player-favorite-weapon-label">好きなブキ</label>
+            <select id="settingsFavoriteWeaponInput" class="input-text"></select>
+          </div>
+          <div class="setting-control" style="justify-content: flex-end;">
+            <button id="confirmPlayerSettingsBtn" class="btn"><span data-i18n-key="player-settings-confirm">決定</span></button>
+          </div>
+          <div class="modal-divider"></div>
+          <div class="setting-item" style="align-items: center;">
+            <strong data-i18n-key="player-id-label">あなたのプレイヤーID</strong>
+            <div id="playerShortIdDisplay" class="player-id-display-large">#-----</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- Report Modal -->
+  <div id="reportModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h2 data-i18n-key="report-modal-title">プレイヤーを報告</h2>
+        <button id="closeReportModalBtn" class="btn icon secondary" title="閉じる">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p><span data-i18n-key="report-modal-target">報告対象:</span> <strong id="reportTargetName"></strong></p>
+        <div class="setting-item">
+          <label for="reportReason" data-i18n-key="report-modal-reason">報告理由</label>
+          <textarea id="reportReason" class="input-text" rows="4" data-i18n-placeholder="report-modal-reason-placeholder" maxlength="500"></textarea>
+        </div>
+        <div class="setting-control" style="justify-content: flex-end; margin-top: 12px;">
+          <button id="submitReportBtn" class="btn danger" data-i18n-key="report-modal-submit">報告を送信</button>
+        </div>
+      </div>
+    </div>
+  <!-- Report Modal -->
+  <div id="reportModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h2 data-i18n-key="report-modal-title">プレイヤーを報告</h2>
+        <button id="closeReportModalBtn" class="btn icon secondary" title="閉じる">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p><span data-i18n-key="report-modal-target">報告対象:</span> <strong id="reportTargetName"></strong></p>
+        <div class="setting-item">
+          <label for="reportReason" data-i18n-key="report-modal-reason">報告理由</label>
+          <textarea id="reportReason" class="input-text" rows="4" data-i18n-placeholder="report-modal-reason-placeholder" maxlength="500"></textarea>
+        </div>
+        <div class="setting-control" style="justify-content: flex-end; margin-top: 12px;">
+          <button id="submitReportBtn" class="btn danger" data-i18n-key="report-modal-submit">報告を送信</button>
+        </div>
+      </div>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
+  <!-- App Scripts -->
+  <script src="Weapondata.js"></script>
+  <script src="translatedata.js"></script>
+  <script src="script.js"></script>
+
+  <!-- Toast Notification -->
+  <div id="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loader-overlay" class="loader-overlay">
+    <div class="loader-spinner"></div>
+    <div id="loader-text" class="loader-text"></div>
+  </div>
+</body>
+</html>
