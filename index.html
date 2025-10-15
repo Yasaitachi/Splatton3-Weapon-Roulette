@@ -50,6 +50,7 @@
       <section class="card" aria-live="polite">
         <div class="display">
           <div id="resultContainer" class="result-container">
+            <img id="resultImage" class="weapon-image" src="" alt="" style="display: none;">
             <div id="resultName" class="name" data-i18n-key="reset-display-name">準備OK</div>
             <div id="resultDetails" class="details" data-i18n-key="reset-display-class">プレイヤー数を選択して「回す」を押してください</div>
           </div>
@@ -73,8 +74,11 @@
               <div id="preset-menu" class="dropdown-menu"></div>
             </div>
           </div>
-          <div id="classFilters" class="grid custom-scrollbar"></div>
-          <div id="paletteFilters" class="grid custom-scrollbar" style="margin-top: 16px;"></div>
+          <div id="filter-grid-container" class="custom-scrollbar">
+            <div id="classFilters"></div>
+            <div id="paletteFilters"></div>
+            <div id="collectionFilters"></div>
+          </div>
         </div>
       </section>
 
@@ -128,14 +132,6 @@
               </label>
             </div>
             <p class="muted small" data-i18n-key="settings-auto-copy-help">抽選完了後、結果をテキスト形式でクリップボードにコピーします。</p>
-            <div class="setting-item row">
-              <label for="streamerMode" data-i18n-key="settings-streamer-mode">配信者モード</label>
-              <label class="toggle-switch">
-                <input type="checkbox" id="streamerMode">
-                <span class="slider"></span>
-              </label>
-            </div>
-            <p class="muted small" data-i18n-key="settings-streamer-mode-help">ルームIDやパスワードを画面上で隠し、配信中の意図しない情報漏洩を防ぎます。コピーボタンは通常通り機能します。</p>
             <div class="setting-item row" id="wakeLockSetting" style="display: none;">
               <label for="preventSleep" data-i18n-key="settings-prevent-sleep">画面のスリープを防止</label>
               <label class="toggle-switch">
@@ -144,6 +140,20 @@
               </label>
             </div>
             <p class="muted small" id="wakeLockHelp" style="display: none;" data-i18n-key="settings-prevent-sleep-help">このページを開いている間、端末がスリープ状態になるのを防ぎます。</p>
+            <div class="setting-item row" style="margin-top: 1rem;">
+              <label for="enableDiscordWebhook" data-i18n-key="settings-enable-discord-webhook">Discord連携を有効にする</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="enableDiscordWebhook">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="discord-settings-container" class="setting-item" style="margin-top: 1rem;">
+              <label for="discordWebhookSelect" data-i18n-key="settings-discord-webhook">Discord Webhook URL</label>
+              <div id="custom-webhook-container" style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="discordWebhookUrl" class="input-text" data-i18n-placeholder="settings-discord-webhook-placeholder" style="flex-grow: 1;">
+              </div>
+              <p class="muted small" data-i18n-key="settings-discord-webhook-help">設定すると、抽選結果が指定されたDiscordチャンネルに自動で投稿されます。</p>
+            </div>
           </div>
         </div>
       </div>

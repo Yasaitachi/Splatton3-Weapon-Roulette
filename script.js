@@ -1,5 +1,6 @@
 // --- Global Variables / グローバル変数 ---------------------------------------------------------
 const APP_VERSION = '1.2.5'; // Application version. Change this number when updating. / アプリケーションのバージョン。更新時にこの数値を変更する。
+
 const RESET_TIMEOUT_MS = 10000; // 10 seconds / 10秒
 const state = {
   running: false,
@@ -21,7 +22,70 @@ const ICONS = {
   LOCK: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`
 };
 
+const IMAGE_PATH_CONFIG = {
+  weapon: 'images/weapons/',
+  sub: 'images/sub/',
+  special: 'images/special/',
+  class: 'images/class/',
+};
+
 const $ = (sel) => document.querySelector(sel);
+
+// ブキ種の画像ファイル名マッピング
+const CLASS_IMAGES = {
+  'シューター': 'Wst_Class_Shooter.png',
+  'ブラスター': 'Wst_Class_Blaster.png',
+  'ローラー': 'Wst_Class_Roller.png',
+  'フデ': 'Wst_Class_Brush.png',
+  'チャージャー': 'Wst_Class_Charger.png',
+  'スロッシャー': 'Wst_Class_Slosher.png',
+  'スピナー': 'Wst_Class_Splatling.png',
+  'マニューバー': 'Wst_Class_Dualie.png',
+  'シェルター': 'Wst_Class_Brella.png',
+  'ワイパー': 'Wst_Class_Splatana.png',
+  'ストリンガー': 'Wst_Class_Stringer.png',
+};
+
+// サブ・スペシャルの画像ファイル名マッピング
+const SUB_WEAPON_IMAGES = {
+  'スプラッシュボム': 'Sub_Splash_Bomb.png',
+  'キューバンボム': 'Sub_Suction_Bomb.png',
+  'クイックボム': 'Sub_Burst_Bomb.png',
+  'タンサンボム': 'Sub_Fizzy_Bomb.png',
+  'カーリングボム': 'Sub_Curling_Bomb.png',
+  'ロボットボム': 'Sub_Autobomb.png',
+  'ジャンプビーコン': 'Sub_Squid_Beakon.png',
+  'スプリンクラー': 'Sub_Sprinkler.png',
+  'トラップ': 'Sub_Ink_Mine.png',
+  'ポイズンミスト': 'Sub_Toxic_Mist.png',
+  'ポイントセンサー': 'Sub_Point_Sensor.png',
+  'スプラッシュシールド': 'Sub_Splat_Wall.png',
+  'ラインマーカー': 'Sub_Angle_Shooter.png',
+  'トーピード': 'Sub_Torpedo.png',
+};
+
+const SPECIAL_WEAPON_IMAGES = {
+  'ウルトラショット': 'SP_Ultra_Shot.png',
+  'グレートバリア': 'SP_Great_Barrier.png',
+  'メガホンレーザー5.1ch': 'SP_Megaphone_Laser_5_1ch.png',
+  'ホップソナー': 'SP_Hop_Sonar.png',
+  'キューインキ': 'SP_Ink_Vac.png',
+  'カニタンク': 'SP_Crab_Tank.png',
+  'サメライド': 'SP_Shark_Ride.png',
+  'ショクワンダー': 'SP_Zipcaster.png',
+  'ウルトラハンコ': 'SP_Ultra_Stamp.png',
+  'トリプルトルネード': 'SP_Triple_Tornado.png',
+  'エナジースタンド': 'SP_Energy_Stand.png',
+  'ジェットパック': 'SP_Jet_Pack.png',
+  'アメフラシ': 'SP_Ink_Storm.png',
+  'ナイスダマ': 'SP_Nice_Ball.png',
+  'マルチミサイル': 'SP_Multi_Missile.png',
+  'デコイチラシ': 'SP_Decoy_Flyer.png',
+  'テイオウイカ': 'SP_Super_Ika.png',
+  'スミナガシート': 'SP_Suminagashi_Sheet.png',
+  'ウルトラチャクチ': 'SP_Ultra_Landing.png',
+};
+
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 const historyEl = $('#history');
@@ -30,10 +94,10 @@ const noRepeat = $('#noRepeat');
 const playerCountInput = $('#playerCount');
 const resultContainer = $('#resultContainer');
 const fullscreenBtn = $('#fullscreenBtn');
+const resultImage = $('#resultImage');
 const settingsBtn = $('#settingsBtn');
 const settingsModal = $('#settingsModal');
 const closeSettingsBtn = $('#closeSettingsBtn');
-const streamerModeToggle = $('#streamerMode');
 const preventSleepToggle = $('#preventSleep');
 const presetMenuBtn = $('#preset-menu-btn');
 const presetMenu = $('#preset-menu');
@@ -109,10 +173,12 @@ function getActivePool() {
   const enabledClass = $$('input[data-class]:checked').map(i => i.getAttribute('data-class'));
   const enabledSub = $$('input[data-sub]:checked').map(i => i.getAttribute('data-sub'));
   const enabledSp = $$('input[data-sp]:checked').map(i => i.getAttribute('data-sp'));
+  const enabledCollection = $$('input[data-collection]:checked').map(i => i.getAttribute('data-collection'));
   return weapons.filter(w =>
     enabledClass.includes(w.class) &&
     enabledSub.includes(w.sub) &&
-    enabledSp.includes(w.sp)
+    enabledSp.includes(w.sp) &&
+    enabledCollection.includes(w.collection)
   );
 }
 
@@ -185,15 +251,17 @@ function renderHistory() {
     const isNewBatch = (index === 0) || (h.time !== historyArray[index - 1].time);
     const batchClass = isNewBatch && index > 0 ? 'new-batch-separator' : '';
 
-    // Display player number only for multiplayer. / 複数人プレイの場合のみプレイヤー番号を表示
+    // Display player number only for multiplayer.
     const playerLabel = h.totalPlayers > 1 ? `P${h.playerNum}: ` : '';
 
     const localIndex = state.history.findIndex(localItem => localItem.time === h.time && localItem.name === h.name);
+    const imageHtml = h.imageId ? `<img src="${IMAGE_PATH_CONFIG.weapon}${h.imageId}.png" class="history-weapon-image" alt="${getWeaponName(h)}">` : '';
     const deleteButton = `<button class="btn secondary icon" data-delete-index="${localIndex}" data-i18n-title="history-delete-item" title="${t('history-delete-item')}">×</button>`;
 
     return `
       <div class="history-item ${batchClass}">
-        <div class="history-item__main">
+        ${imageHtml}
+        <div class="history-item__main" style="${!h.imageId ? 'margin-left: 48px;' : ''}">
           <div class="history-weapon-name">${playerLabel}${getWeaponName(h)}</div>
           <div class="history-weapon-details muted">${t(h.class)} / ${t(h.sub)} / ${t(h.sp)}</div>
         </div>
@@ -376,9 +444,11 @@ async function displaySpinResult(finalResults, pool) {
   if (finalResults.length > 0) {
       const drawTime = new Date().toISOString();
       await persistResults(finalResults, drawTime);
+      updatePool(); // 先にプールを更新
       if ($('#autoCopy')?.checked) {
           await copyResultToClipboard(finalResults);
       }
+      await sendToDiscordWebhook(finalResults);
 
       state.resetTimer = setTimeout(() => {
           resultContainer.innerHTML = `
@@ -390,7 +460,10 @@ async function displaySpinResult(finalResults, pool) {
 
   state.running = false;
   setControlsDisabled(false);
-  updatePool();
+  // Hide image after reset
+  if (resultImage) {
+    resultImage.style.display = 'none';
+  }
 }
 
 async function startSpin() {
@@ -406,26 +479,39 @@ async function startSpin() {
 
 function showSpinningText(weapon) {
     if (!weapon) return;
-
+    
+    let imageEl = $('#resultImage');
     let nameEl = $('#resultName');
     let detailsEl = $('#resultDetails');
 
     // If elements don't exist (e.g., after showing multi-player list), recreate them.
-    if (!nameEl || !detailsEl) {
+    if (!nameEl || !detailsEl || !imageEl) {
         resultContainer.innerHTML = `
+            <img id="resultImage" class="weapon-image" src="" alt="">
             <div id="resultName" class="name"></div>
             <div id="resultDetails" class="details"></div>
         `;
+        imageEl = $('#resultImage');
         nameEl = $('#resultName');
         detailsEl = $('#resultDetails');
     }
 
+    imageEl.style.display = 'block';
+
     // Add animation classes
+    imageEl.classList.add('spin-out');
     nameEl.classList.add('spin-out');
     detailsEl.classList.add('spin-out');
 
     // After the 'out' animation, change the text and trigger the 'in' animation
     setTimeout(() => {
+        if (weapon.imageId) {
+            imageEl.src = `${IMAGE_PATH_CONFIG.weapon}${weapon.imageId}.png`;
+            imageEl.alt = getWeaponName(weapon);
+        }
+        imageEl.classList.remove('spin-out');
+        imageEl.classList.add('spin-in');
+
         nameEl.textContent = getWeaponName(weapon);
         detailsEl.innerHTML = `
             <span>${t(weapon.class)}</span><span class="separator">/</span><span>${t(weapon.sub)}</span><span class="separator">/</span><span>${t(weapon.sp)}</span>
@@ -443,6 +529,7 @@ function showSpinningText(weapon) {
  */
 async function showFinalResult(results) {
   if (!results || results.length === 0) {
+    if (resultImage) resultImage.style.display = 'none';
     resultContainer.innerHTML = `
       <div id="resultName" class="name">${t('error')}</div>
       <div id="resultDetails" class="details">${t('error-failed-draw')}</div>
@@ -452,19 +539,29 @@ async function showFinalResult(results) {
 
   if (results.length === 1) {
     const w = results[0];
+    let imageEl = $('#resultImage');
     let nameEl = $('#resultName');
     let detailsEl = $('#resultDetails');
 
-    if (!nameEl || !detailsEl) {
+    if (!nameEl || !detailsEl || !imageEl) {
         resultContainer.innerHTML = `
+            <img id="resultImage" class="weapon-image" src="" alt="">
             <div id="resultName" class="name"></div>
             <div id="resultDetails" class="details"></div>
         `;
+        imageEl = $('#resultImage');
         nameEl = $('#resultName');
         detailsEl = $('#resultDetails');
     }
 
+    if (w.imageId) {
+        imageEl.src = `${IMAGE_PATH_CONFIG.weapon}${w.imageId}.png`;
+        imageEl.alt = getWeaponName(w);
+        imageEl.style.display = 'block';
+    }
+
     // Final result animation
+    imageEl.classList.add('final-result');
     nameEl.classList.add('final-result');
     detailsEl.classList.add('final-result');
 
@@ -472,6 +569,7 @@ async function showFinalResult(results) {
     detailsEl.innerHTML = `<span>${t(w.class)}</span><span class="separator">/</span><span>${t(w.sub)}</span><span class="separator">/</span><span>${t(w.sp)}</span>`;
 
   } else {
+    if (resultImage) resultImage.style.display = 'none';
     resultContainer.innerHTML = `<ul class="result-list"></ul>`;
     const listEl = resultContainer.querySelector('.result-list');
 
@@ -524,6 +622,69 @@ async function copyResultToClipboard(results) {
   }
 }
 
+/**
+ * Sends the draw results to a Discord webhook if configured.
+ * @param {Array<Object>} results - An array of weapon objects from the draw results.
+ */
+async function sendToDiscordWebhook(results) {
+  const enableWebhook = document.getElementById('enableDiscordWebhook')?.checked;
+  const customUrlInput = document.getElementById('discordWebhookUrl');
+  const webhookUrl = customUrlInput.value.trim();
+
+  // If not enabled, or URL is invalid, do nothing.
+  if (!enableWebhook || !webhookUrl || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+    return;
+  }
+
+  const playerCount = results.length;
+
+  // --- Default Embed Format ---
+  const fields = results.map((w, i) => {
+    let weaponName = getWeaponName(w);
+    const details = `${t(w.class)} / ${t(w.sub)} / ${t(w.sp)}`;
+
+    // For multi-player, add a link to the weapon image in the name.
+    if (playerCount > 1 && w.imageId) {
+      const imageUrl = `${IMAGE_PATH_CONFIG.remote}${w.imageId}.png`;
+      weaponName = `${weaponName}`;
+    }
+
+    return {
+      name: playerCount > 1 ? `${t('player-result-list', { i: i + 1 })}` : weaponName,
+      value: playerCount > 1 ? `${weaponName}\n${details}` : details,
+      inline: playerCount > 1, // Show side-by-side for multiple players
+    };
+  });
+
+  const embed = {
+    title: t('discord-embed-title'),
+    color: 0x7cf3d2, // --accent color
+    fields: fields,
+    timestamp: new Date().toISOString(),
+  };
+
+  // Add thumbnail image if only one weapon is drawn
+  if (results.length === 1 && results[0].imageId) {
+    embed.thumbnail = {
+        url: `${IMAGE_PATH_CONFIG.weapon}${results[0].imageId}.png`
+    };
+  }
+
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ embeds: [embed] }),
+    });
+  } catch (err) {
+    console.error('Failed to send to Discord webhook:', err);
+    // Optionally, show a toast notification to the user
+    // showToast('Discordへの投稿に失敗しました。', 'error');
+  }
+}
+
 function resetAll() {
   state.running = false;
   clearTimeout(state.resetTimer);
@@ -540,6 +701,7 @@ function resetAll() {
     <div id="resultName" class="name" data-i18n-key="reset-display-name">${t('reset-display-name')}</div>
     <div id="resultDetails" class="details" data-i18n-key="reset-display-class">${t('reset-display-class')}</div>
   `;
+  if (resultImage) resultImage.style.display = 'none';
   
   updatePool();
   saveSettings();
@@ -565,7 +727,7 @@ function renderProbTable() {
     </tr>` +
     uniquePool.sort((a, b) => getWeaponName(a).localeCompare(getWeaponName(b))).map(w => {
       const countInPool = pool.filter(item => item.name === w.name).length;
-      const prob = (countInPool / pool.length) * 100;
+      const prob = uniquePool.length === 1 ? 100 : (countInPool / pool.length) * 100;
       const boostValue = state.boostedWeapons[w.name] || 1;
       return `<tr>
         <td>${getWeaponName(w)}</td>
@@ -696,7 +858,9 @@ function saveSettings() {
       theme: state.theme,
       autoCopy: $('#autoCopy')?.checked ?? false,
       preventSleep: preventSleepToggle.checked,
-      streamerMode: streamerModeToggle.checked,
+      discordWebhookSelection: $('#discordWebhookSelect')?.value || '',
+      enableDiscordWebhook: $('#enableDiscordWebhook')?.checked ?? false,
+      discordWebhookUrl: $('#discordWebhookUrl')?.value || '',
     };
     localStorage.setItem('splaRouletteSettings', JSON.stringify(settings));
   } catch (e) {
@@ -727,10 +891,14 @@ function loadAndApplySettings() {
         requestWakeLock();
       }
     }
-    if ('streamerMode' in settings) {
-      streamerModeToggle.checked = settings.streamerMode;
+    const enableDiscordWebhookToggle = $('#enableDiscordWebhook');
+    if (enableDiscordWebhookToggle && 'enableDiscordWebhook' in settings) {
+      enableDiscordWebhookToggle.checked = settings.enableDiscordWebhook;
     }
-    applyStreamerMode();
+    const discordWebhookUrlInput = $('#discordWebhookUrl');
+    if (discordWebhookUrlInput && 'discordWebhookUrl' in settings) {
+      discordWebhookUrlInput.value = settings.discordWebhookUrl;
+    }
   } catch (e) {
     console.error("Failed to load settings:", e);
     localStorage.removeItem('splaRouletteSettings');
@@ -790,6 +958,7 @@ function updateUIText() {
   updateProbText();
   renderHistory();
   renderProbTable();
+  populateWebhookSelect();
   updateFullscreenButton();
 }
 
@@ -836,6 +1005,7 @@ function getFilterState() {
     class: $$('input[data-class]').reduce((acc, cb) => ({ ...acc, [cb.dataset.class]: cb.checked }), {}),
     sub: $$('input[data-sub]').reduce((acc, cb) => ({ ...acc, [cb.dataset.sub]: cb.checked }), {}),
     sp: $$('input[data-sp]').reduce((acc, cb) => ({ ...acc, [cb.dataset.sp]: cb.checked }), {}),
+    collection: $$('input[data-collection]').reduce((acc, cb) => ({ ...acc, [cb.dataset.collection]: cb.checked }), {}),
     noRepeat: noRepeat.checked,
   };
 }
@@ -845,6 +1015,7 @@ function applyFilterState(preset) {
   $$('input[data-class]').forEach(cb => { if (preset.class?.[cb.dataset.class] !== undefined) cb.checked = preset.class[cb.dataset.class]; });
   $$('input[data-sub]').forEach(cb => { if (preset.sub?.[cb.dataset.sub] !== undefined) cb.checked = preset.sub[cb.dataset.sub]; });
   $$('input[data-sp]').forEach(cb => { if (preset.sp?.[cb.dataset.sp] !== undefined) cb.checked = preset.sp[cb.dataset.sp]; });
+  $$('input[data-collection]').forEach(cb => { if (preset.collection?.[cb.dataset.collection] !== undefined) cb.checked = preset.collection[cb.dataset.collection]; });
   noRepeat.checked = preset.noRepeat ?? false;
   handleFilterChange();
 }
@@ -942,6 +1113,7 @@ function buildFilterUI() {
   const allSubs = [...new Set(weapons.map(w => w.sub))].filter(Boolean).sort();
   const allSps = [...new Set(weapons.map(w => w.sp))].filter(Boolean).sort();
   const classFilters = $('#classFilters');
+  const collectionFilters = $('#collectionFilters');
   // Note: Text content will be set by updateUIText(). / 注: テキストコンテンツはupdateUIText()によって設定されます
   classFilters.innerHTML = `
   <div class="filter-group">
@@ -949,39 +1121,62 @@ function buildFilterUI() {
       <strong data-i18n-key="filter-class"></strong>
       <button type="button" class="btn-filter" data-toggle-all="class" data-i18n-key="filter-toggle"></button>
     </div>
-    ${[...new Set(weapons.map(w => w.class))].sort().map(cls =>
-      `<label class="chip"><input type="checkbox" data-class="${cls}" checked> <span data-i18n-key="${cls}">${cls}</span></label>`
-    ).join('')}
+    ${[...new Set(weapons.map(w => w.class))].sort().map(cls => { // eslint-disable-line
+      const imageName = CLASS_IMAGES[cls];
+      const imageTag = imageName ? `<img src="${IMAGE_PATH_CONFIG.class}${imageName}" alt="${cls}">` : '';
+      return `<label class="chip"><input type="checkbox" data-class="${cls}" checked> ${imageTag} <span data-i18n-key="${cls}">${cls}</span></label>`;
+    }).join('')}
   </div>
   <div class="filter-group">
     <div class="filter-header">
       <strong data-i18n-key="filter-sub"></strong>
       <button type="button" class="btn-filter" data-toggle-all="sub" data-i18n-key="filter-toggle"></button>
     </div>
-    ${allSubs.map(sub =>
-      `<label class="chip"><input type="checkbox" data-sub="${sub}" checked> <span data-i18n-key="${sub}">${sub}</span></label>`
-    ).join('')}
+    ${allSubs.map(sub => { // eslint-disable-line
+      const imageName = SUB_WEAPON_IMAGES[sub];
+      const imageTag = imageName ? `<img src="${IMAGE_PATH_CONFIG.sub}${imageName}" alt="${sub}">` : '';
+      return `<label class="chip"><input type="checkbox" data-sub="${sub}" checked> ${imageTag} <span data-i18n-key="${sub}">${sub}</span></label>`;
+    }).join('')}
   </div>
   <div class="filter-group">
     <div class="filter-header">
       <strong data-i18n-key="filter-special"></strong>
       <button type="button" class="btn-filter" data-toggle-all="sp" data-i18n-key="filter-toggle"></button>
     </div>
-    ${allSps.map(sp =>
-      `<label class="chip"><input type="checkbox" data-sp="${sp}" checked> <span data-i18n-key="${sp}">${sp}</span></label>`
+    ${allSps.map(sp => { // eslint-disable-line
+      const imageName = SPECIAL_WEAPON_IMAGES[sp];
+      const imageTag = imageName ? `<img src="${IMAGE_PATH_CONFIG.special}${imageName}" alt="${sp}">` : '';
+      return `<label class="chip"><input type="checkbox" data-sp="${sp}" checked> ${imageTag} <span data-i18n-key="${sp}">${sp}</span></label>`;
+    }).join('')}
+  </div>
+  `;
+
+  collectionFilters.innerHTML = `
+  <div class="filter-group">
+    <div class="filter-header">
+      <strong data-i18n-key="filter-collection"></strong>
+      <button type="button" class="btn-filter" data-toggle-all="collection" data-i18n-key="filter-toggle"></button>
+    </div>
+    ${[...new Set(weapons.map(w => w.collection))].sort().map(c =>
+      `<label class="chip"><input type="checkbox" data-collection="${c}" checked> <span>${c}</span></label>`
     ).join('')}
   </div>
   `;
 }
 
-function buildFavoriteWeaponOptions() {
-  const selectEl = $('#settingsFavoriteWeaponInput');
+function populateWebhookSelect() {
+  const selectEl = $('#discordWebhookSelect');
   if (!selectEl) return;
 
-  const options = weapons.map(w => `<option value="${w.name}">${getWeaponName(w)}</option>`).join('');
+  const webhookOptions = PRECONFIGURED_WEBHOOKS.map(hook => {
+    const name = state.lang === 'en' ? hook.name_en : hook.name;
+    return `<option value="${escapeHTML(hook.url)}">${escapeHTML(name)}</option>`;
+  }).join('');
+
   selectEl.innerHTML = `
-    <option value="" data-i18n-key="player-favorite-weapon-none">${t('player-favorite-weapon-none')}</option>
-    ${options}
+    <option value="" data-i18n-key="settings-webhook-select">${t('settings-webhook-select')}</option>
+    ${webhookOptions}
+    <option value="custom" data-i18n-key="settings-webhook-custom">${t('settings-webhook-custom')}</option>
   `;
 }
 function setupEventListeners() {
@@ -1006,6 +1201,24 @@ function setupEventListeners() {
   $$('input[name="language"]').forEach(radio => radio.addEventListener('change', (e) => setLanguage(e.target.value)));
 
   $('#autoCopy')?.addEventListener('change', saveSettings);
+  $('#discordWebhookSelect')?.addEventListener('change', (e) => {
+    const customInput = document.getElementById('discordWebhookUrl');
+    const noticeEl = document.getElementById('webhook-preconfigured-notice');
+    const selectedValue = e.target.value;
+
+    // Show/hide custom URL input
+    customInput.style.display = selectedValue === 'custom' ? 'block' : 'none';
+
+    // Check if the selected value is one of the preconfigured webhooks
+    const isPreconfigured = PRECONFIGURED_WEBHOOKS.some(hook => hook.url === selectedValue);
+
+    // Show/hide the notice
+    noticeEl.style.display = isPreconfigured ? 'block' : 'none';
+
+    saveSettings();
+  });
+  $('#enableDiscordWebhook')?.addEventListener('change', saveSettings);
+  $('#discordWebhookUrl')?.addEventListener('input', saveSettings);
   // Wake Lock Toggle. / Wake Lockのトグル
   function showSettingToast(settingNameKey, isEnabled) {
     const key = isEnabled ? 'toast-setting-on' : 'toast-setting-off';
@@ -1035,23 +1248,31 @@ function setupEventListeners() {
     });
   }
 
-  streamerModeToggle.addEventListener('change', () => {
-    applyStreamerMode();
-    showSettingToast('settings-streamer-mode', streamerModeToggle.checked);
-    saveSettings();
-  });
-
   systemThemeListener.addEventListener('change', handleSystemThemeChange);
 
   historyEl.addEventListener('click', handleDeleteHistoryItem);
 
   // Listener for when individual filter checkboxes are changed. / フィルターのチェックボックス（個別）が変更されたときのリスナー
   $('#classFilters').addEventListener('change', handleFilterChange);
+  $('#collectionFilters').addEventListener('change', handleFilterChange);
   // Listener for when "No Duplicates" checkbox is changed. / 「重複なし」チェックボックスが変更されたときのリスナー
   noRepeat.addEventListener('change', handleFilterChange);
 
   // Listener for when the "Select/Deselect All" button for filters is clicked. / フィルターの「すべて選択/解除」ボタンがクリックされたときのリスナー
   $('#classFilters').addEventListener('click', e => {
+    const toggleType = e.target.dataset.toggleAll;
+    if (toggleType) {
+      const checkboxes = $$(`input[data-${toggleType}]`);
+      if (checkboxes.length === 0) return;
+
+      const allCurrentlyChecked = checkboxes.every(cb => cb.checked);
+      const newCheckedState = !allCurrentlyChecked;
+
+      checkboxes.forEach(cb => cb.checked = newCheckedState);
+      handleFilterChange(); // Apply changes / 変更を適用
+    }
+  });
+  $('#collectionFilters').addEventListener('click', e => {
     const toggleType = e.target.dataset.toggleAll;
     if (toggleType) {
       const checkboxes = $$(`input[data-${toggleType}]`);
@@ -1124,8 +1345,8 @@ function setupEventListeners() {
 function handleFilterChange(event) {
   // If an event is passed, prevent the last checkbox from being turned off. / イベントが渡された場合、最後のチェックボックスがオフにされるのを防ぐ
   if (event && event.target && event.target.matches('input[type="checkbox"]')) {
-    const group = event.target.dataset.class ? 'class' : event.target.dataset.sub ? 'sub' : 'sp';
-    if (group) {
+    const group = event.target.dataset.class ? 'class' : event.target.dataset.sub ? 'sub' : event.target.dataset.collection ? 'collection' : 'sp';
+    if (group || event.target.dataset.season) {
       const selector = `input[data-${group}]`;
       const checkboxes = $$(selector);
       const checkedCount = checkboxes.filter(cb => cb.checked).length;

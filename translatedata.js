@@ -139,6 +139,7 @@ const translations = {
     'filter-sub': 'サブウェポン',
     'filter-special': 'スペシャルウェポン',
     'filter-toggle': 'すべて切り替え',
+    'filter-collection': 'コレクション',
 
     // History
     'history-title': '抽選履歴',
@@ -214,8 +215,6 @@ const translations = {
     'settings-general-title': '一般設定',
     'settings-auto-copy': '結果をクリップボードに自動コピー',
     'settings-auto-copy-help': '抽選完了後、結果をテキスト形式でクリップボードにコピーします。',
-    'settings-streamer-mode': '配信者モード',
-    'settings-streamer-mode-help': 'ルームIDやパスワードを画面上で隠し、配信中の意図しない情報漏洩を防ぎます。コピーボタンは通常通り機能します。',
     'settings-prevent-sleep': 'スリープを防止',
     'settings-prevent-sleep-help': 'このページを開いている間、デバイスがスリープモードになるのを防ぎます。',
     'wake-lock-acquired': 'スリープ防止が有効になりました。',
@@ -225,8 +224,14 @@ const translations = {
     'settings-theme-dark': 'ダーク',
     'settings-theme-system': 'システム',
     'settings-language': '言語',
+    'settings-enable-discord-webhook': 'Discord連携を有効にする',
     'settings-language-ja': '日本語',
     'settings-language-en': 'English',
+    'settings-discord-webhook': 'Discord Webhook URL',
+    'settings-discord-webhook-placeholder': 'WebhookのURLをここに貼り付け',
+    'settings-discord-webhook-help': '設定すると、抽選結果が指定されたDiscordチャンネルに自動で投稿されます。',
+
+    'discord-embed-title': 'ブキルーレット結果',
 
     // Presets
     'settings-presets-title': 'プリセット',
@@ -470,6 +475,7 @@ const translations = {
     'filter-sub': 'Sub Weapon',
     'filter-special': 'Special Weapon',
     'filter-toggle': 'Toggle All',
+    'filter-collection': 'Collection',
 
     // History
     'history-title': 'Draw History',
@@ -545,8 +551,6 @@ const translations = {
     'settings-general-title': 'General Settings',
     'settings-auto-copy': 'Auto-copy result to clipboard',
     'settings-auto-copy-help': 'After a draw is complete, automatically copy the result as text to the clipboard.',
-    'settings-streamer-mode': 'Streamer Mode',
-    'settings-streamer-mode-help': 'Hides the Room ID and Password on screen to prevent accidental leaks during a stream. Copy buttons will still work.',
     'settings-prevent-sleep': 'Prevent Sleep',
     'settings-prevent-sleep-help': 'Prevents the device from going to sleep while this page is open.',
     'wake-lock-acquired': 'Wake Lock activated.',
@@ -556,8 +560,14 @@ const translations = {
     'settings-theme-dark': 'Dark',
     'settings-theme-system': 'System',
     'settings-language': 'Language',
+    'settings-enable-discord-webhook': 'Enable Discord Integration',
     'settings-language-ja': '日本語',
     'settings-language-en': 'English',
+    'settings-discord-webhook': 'Discord Webhook URL',
+    'settings-discord-webhook-placeholder': 'Paste your webhook URL here',
+    'settings-discord-webhook-help': 'When set, roulette results will be automatically posted to the specified Discord channel.',
+
+    'discord-embed-title': 'Weapon Roulette Results',
 
     // Presets
     'settings-presets-title': 'Presets',

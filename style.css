@@ -119,10 +119,26 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
 
 /* Roulette display */
-.display { position: relative; overflow: hidden; text-align:center; padding: 32px; }
-.result-container {
-  min-height: 100px; /* 結果表示エリアの高さを確保 */
+.display {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 16px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px; /* 画像とテキストの高さを確保 */
+}
+.weapon-image {
+  max-width: 80%;
+  max-height: 120px;
+  object-fit: contain;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+}
+.result-container {
+  display: flex; /* 既存のスタイルを維持 */
   flex-direction: column;
   justify-content: center;
 }
@@ -156,18 +172,19 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
     opacity: 1;
   }
 }
+.name.final-result, .details.final-result, .weapon-image.final-result {
+  animation: final-result 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.weapon-image.spin-out { animation: spin-out 0.1s forwards; }
+.weapon-image.spin-in { animation: spin-in 0.1s forwards; }
+.name.spin-out, .details.spin-out { animation: spin-out 0.1s forwards; }
+.name.spin-in, .details.spin-in { animation: spin-in 0.1s forwards; }
 @keyframes final-result {
   0% { transform: scale(0.5) rotate(-15deg); opacity: 0; filter: blur(4px); }
   60% { transform: scale(1.2) rotate(5deg); opacity: 1; filter: blur(0); text-shadow: 0 0 15px var(--accent), 0 0 30px var(--accent); }
   80% { transform: scale(0.95) rotate(-2deg); }
   100% { transform: scale(1) rotate(0deg); text-shadow: none; }
 }
-.name.spin-out, .details.spin-out { animation: spin-out 0.1s forwards; }
-.name.spin-in, .details.spin-in { animation: spin-in 0.1s forwards; }
-.name.final-result, .details.final-result {
-  animation: final-result 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
 
 /* 結果リストのスタイル */
 .result-list {
@@ -226,18 +243,15 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   cursor: pointer;
   transition: background-color .2s ease, color .2s ease;
 }
-
 .btn-filter:hover {
   background-color: rgba(255,255,255,.1);
   color: var(--text);
 }
-
-/* ブキ絞り込みのコンテナ（.gridクラスがindex.htmlで指定されている） */
-.grid {
-  display: flex;
-  flex-direction: column;
+#filter-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
-  max-height: 360px;
+  max-height: 420px;
   overflow: auto;
   padding: 6px;
 }
@@ -245,6 +259,10 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
 /* 各ブキ種別のチップを並べるグリッド（JSによって生成される） */
 .filter-group .grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 10px;
+}
+#custom-pool-list.grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 10px;
+  padding: 6px;
 }
 .chip {
   background: var(--chip-bg);
@@ -256,11 +274,25 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   gap:8px;
   cursor: pointer;
 }
-.chip input[type="radio"],
+.chip:hover {
+  border-color: var(--accent);
+}
 .chip input[type="checkbox"] {
+  flex-shrink: 0; /* チェックボックスが縮まないようにする */
+  margin: 0;
   accent-color: var(--accent);
 }
-.chip input { width:16px; height:16px; }
+.chip img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.chip span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .layout > aside.card {
   display: flex;
@@ -271,15 +303,24 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   max-height: 760px;
   overflow: auto; /* 内容がはみ出たらスクロール */
 }
+.history-weapon-image {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
 .history-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--card-border);
   background: var(--history-item-bg);
+}
+.history-item__main {
+  flex-grow: 1;
 }
 .history-item .history-weapon-name { font-weight: 800; }
 .history-item .history-weapon-details { font-size: 12px; }
