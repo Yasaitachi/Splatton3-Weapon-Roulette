@@ -77,7 +77,6 @@
           <div id="filter-grid-container" class="custom-scrollbar">
             <div id="classFilters"></div>
             <div id="paletteFilters"></div>
-            <div id="collectionFilters"></div>
           </div>
         </div>
       </section>
@@ -109,16 +108,9 @@
             <div class="setting-item">
               <strong data-i18n-key="settings-theme">テーマ</strong>
               <div class="setting-control">
-                <label class="chip"><input type="radio" name="theme" value="system"> <span data-i18n-key="theme-system">システム</span></label>
-                <label class="chip"><input type="radio" name="theme" value="light"> <span data-i18n-key="theme-light">ライト</span></label>
-                <label class="chip"><input type="radio" name="theme" value="dark"> <span data-i18n-key="theme-dark">ダーク</span></label>
-              </div>
-            </div>
-            <div class="setting-item">
-              <strong data-i18n-key="settings-language">言語</strong>
-              <div class="setting-control">
-                <label class="chip"><input type="radio" name="language" value="ja"> <span data-i18n-key="language-ja">日本語</span></label>
-                <label class="chip"><input type="radio" name="language" value="en"> <span data-i18n-key="language-en">English</span></label>
+                <label class="chip"><input type="radio" name="theme" value="system"><div class="theme-preview system"></div><span data-i18n-key="settings-theme-system">システム</span></label>
+                <label class="chip"><input type="radio" name="theme" value="light"><div class="theme-preview light"></div><span data-i18n-key="settings-theme-light">ライト</span></label>
+                <label class="chip"><input type="radio" name="theme" value="dark"><div class="theme-preview dark"></div><span data-i18n-key="settings-theme-dark">ダーク</span></label>
               </div>
             </div>
           </div>
@@ -140,19 +132,19 @@
               </label>
             </div>
             <p class="muted small" id="wakeLockHelp" style="display: none;" data-i18n-key="settings-prevent-sleep-help">このページを開いている間、端末がスリープ状態になるのを防ぎます。</p>
-            <div class="setting-item row" style="margin-top: 1rem;">
-              <label for="enableDiscordWebhook" data-i18n-key="settings-enable-discord-webhook">Discord連携を有効にする</label>
-              <label class="toggle-switch">
-                <input type="checkbox" id="enableDiscordWebhook">
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div id="discord-settings-container" class="setting-item" style="margin-top: 1rem;">
-              <label for="discordWebhookSelect" data-i18n-key="settings-discord-webhook">Discord Webhook URL</label>
-              <div id="custom-webhook-container" style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-                <input type="text" id="discordWebhookUrl" class="input-text" data-i18n-placeholder="settings-discord-webhook-placeholder" style="flex-grow: 1;">
+          </div>
+          <div class="settings-section">
+            <h3 data-i18n-key="credits-title">クレジット</h3>
+            <div class="credit-item">
+              <span data-i18n-key="credits-font-heading">見出しフォント:</span>
+              <div>
+                <a href="https://aramugi.com/?page_id=807" target="_blank" class="link">イカモドキ</a> / 
+                <a href="http://fizzystack.web.fc2.com/paintball-ja.html" target="_blank" class="link">Paintball</a>
               </div>
-              <p class="muted small" data-i18n-key="settings-discord-webhook-help">設定すると、抽選結果が指定されたDiscordチャンネルに自動で投稿されます。</p>
+            </div>
+            <div class="credit-item">
+              <span data-i18n-key="credits-font-body">本文フォント:</span>
+              <a href="https://booth.pm/ja/items/2524542" target="_blank" class="link">ラグランパンチ</a>
             </div>
           </div>
         </div>

@@ -139,6 +139,7 @@ const translations = {
     'filter-sub': 'サブウェポン',
     'filter-special': 'スペシャルウェポン',
     'filter-toggle': 'すべて切り替え',
+    'filter-toggle-all-help': 'クリックして全て選択/解除',
     'filter-collection': 'コレクション',
 
     // History
@@ -205,6 +206,7 @@ const translations = {
     'prob-special': 'スペシャル',
     'prob-value': '確率',
     'prob-boost': 'ブースト',
+    'prob-total': '合計',
     'prob-boost-tooltip': 'ブースト倍率(1～10)を入力します。2にすると確率が2倍になります。',
 
     // Settings Modal
@@ -224,14 +226,8 @@ const translations = {
     'settings-theme-dark': 'ダーク',
     'settings-theme-system': 'システム',
     'settings-language': '言語',
-    'settings-enable-discord-webhook': 'Discord連携を有効にする',
     'settings-language-ja': '日本語',
     'settings-language-en': 'English',
-    'settings-discord-webhook': 'Discord Webhook URL',
-    'settings-discord-webhook-placeholder': 'WebhookのURLをここに貼り付け',
-    'settings-discord-webhook-help': '設定すると、抽選結果が指定されたDiscordチャンネルに自動で投稿されます。',
-
-    'discord-embed-title': 'ブキルーレット結果',
 
     // Presets
     'settings-presets-title': 'プリセット',
@@ -334,6 +330,11 @@ const translations = {
     'admin-chat-viewer-title': 'チャットログ',
     'admin-no-chat-history': 'このルームにはチャット履歴がありません。',
     'admin-chat-load-fail': 'チャットログの読み込みに失敗しました。',
+
+    // Credits
+    'credits-title': 'クレジット',
+    'credits-font-heading': '見出しフォント',
+    'credits-font-body': '本文フォント',
   },
     en: {
     'or-divider': 'or',
@@ -475,6 +476,7 @@ const translations = {
     'filter-sub': 'Sub Weapon',
     'filter-special': 'Special Weapon',
     'filter-toggle': 'Toggle All',
+    'filter-toggle-all-help': 'Click to select/deselect all',
     'filter-collection': 'Collection',
 
     // History
@@ -541,6 +543,7 @@ const translations = {
     'prob-special': 'Special',
     'prob-value': 'Prob.',
     'prob-boost': 'Boost',
+    'prob-total': 'Total',
     'prob-boost-tooltip': 'Enter a boost multiplier (1-10). 2 doubles the probability.',
 
     // Settings Modal
@@ -560,14 +563,8 @@ const translations = {
     'settings-theme-dark': 'Dark',
     'settings-theme-system': 'System',
     'settings-language': 'Language',
-    'settings-enable-discord-webhook': 'Enable Discord Integration',
     'settings-language-ja': '日本語',
     'settings-language-en': 'English',
-    'settings-discord-webhook': 'Discord Webhook URL',
-    'settings-discord-webhook-placeholder': 'Paste your webhook URL here',
-    'settings-discord-webhook-help': 'When set, roulette results will be automatically posted to the specified Discord channel.',
-
-    'discord-embed-title': 'Weapon Roulette Results',
 
     // Presets
     'settings-presets-title': 'Presets',
@@ -670,6 +667,11 @@ const translations = {
     'admin-chat-viewer-title': 'Chat Log',
     'admin-no-chat-history': 'No chat history for this room.',
     'admin-chat-load-fail': 'Failed to load chat log.',
+
+    // Credits
+    'credits-title': 'Credits',
+    'credits-font-heading': 'Heading Font',
+    'credits-font-body': 'Body Font',
 
   }
 };

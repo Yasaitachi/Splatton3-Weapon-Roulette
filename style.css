@@ -1,3 +1,42 @@
+@font-face {
+  font-family: 'SplatoonFont'; /* 見出し用のフォント名を定義 */
+  src: url('fonts/ikamodoki1_0.ttf') format('truetype');
+  /* ひらがな・カタカナ・一部記号を担当 */
+  unicode-range: U+3040-309F, U+30A0-30FF, U+FF01-FF5E, U+25CB, U+25CF, U+2010-2026;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SplatoonFont'; /* 同じフォント名で見出し用フォントを定義 */
+  src: url('fonts/Paintball_Beta_3.ttf') format('truetype');
+  /* 英数字・基本記号を担当 */
+  unicode-range: U+0020-007E;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BodyFont'; /* 本文用のフォント名を定義 */
+  src: url('fonts/log-ran-punti-v2.ttf') format('truetype');
+  /* 漢字・ひらがな・カタカナなどを担当 */
+  unicode-range: U+3040-30FF, U+4E00-9FFF, U+FF01-FF5E;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BodyFont'; /* 同じフォント名で定義 */
+  src: url('fonts/MPlusRounded1c-Regular.ttf') format('truetype');
+  /* 英数字を担当 */
+  unicode-range: U+0020-007E;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 :root, html[data-theme="dark"] {
   --bg: #0b1020;
   --panel: #141a33;
@@ -20,7 +59,7 @@
   --chip-bg: rgba(255,255,255,.06);
   --chip-border: rgba(255,255,255,.08);
   --history-item-bg: rgba(255,255,255,.03);
-  --prob-table-header-bg: rgba(255,255,255,0.04);
+  --prob-table-header-bg: rgba(var(--panel-rgb), 0.75);
   --card-shadow: 0 10px 30px rgba(0,0,0,.3);
   --secondary-btn-border: rgba(255,255,255,.15);
   --pill-border: rgba(255,255,255,.12);
@@ -54,16 +93,10 @@ html[data-theme="light"] {
 }
 * { box-sizing: border-box; }
 body {
-  margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans JP, sans-serif;
+  margin: 0; font-family: 'SplatoonFont', 'BodyFont', system-ui, -apple-system, Segoe UI, Roboto, Noto Sans JP, sans-serif;
   background: var(--body-bg);
   color: var(--text);
   min-height: 100vh; display: grid; place-items: center; padding: 24px;
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-body::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari, Opera */
-}
 .app { width: min(1100px, 100%); }
 header { display:flex; gap:14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
@@ -114,8 +147,8 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   font-size: 16px;
   padding: 0;
 }
-
 .layout { display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; margin-top: 20px; }
+.layout { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
 
 /* Roulette display */
@@ -140,13 +173,48 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
 .result-container {
   display: flex; /* 既存のスタイルを維持 */
   flex-direction: column;
+  align-items: center; /* 子要素を中央揃えにする */
   justify-content: center;
 }
-.display .name { font-size: clamp(26px, 5vw, 40px); font-weight: 900; letter-spacing:.02em; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+.display .name {
+  font-size: clamp(26px, 5vw, 40px);
+  font-weight: normal;
+  letter-spacing:.05em;
+  text-shadow: 0 2px 10px rgba(0,0,0,.5);
+}
 .display .details {
-  color: var(--muted); margin-top:6px; font-weight:600;
-  display: flex; justify-content: center; align-items: center; gap: 8px;
+  color: var(--text);
+  margin-top: 12px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   font-size: clamp(14px, 2.5vw, 18px);
+  width: 100%;
+  max-width: 320px; /* 詳細表示の最大幅を設定 */
+}
+.detail-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+.detail-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.detail-label {
+  font-size: 0.8em;
+  color: var(--muted);
+  width: 80px;
+  text-align: right;
+}
+.detail-icon {
+  height: 1.2em; /* テキストの高さに合わせる */
+  width: 1.2em;
+  object-fit: contain;
+  vertical-align: middle; /* 上下の位置を中央に */
 }
 .display .details .separator { font-size: 0.8em; opacity: 0.5; }
 .ticker {
@@ -194,12 +262,32 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   font-size: clamp(18px, 3vw, 24px);
   font-weight: 800;
 }
+.result-list li.final-result {
+  animation: final-result-li 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes final-result-li {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
 .result-list li {
   align-items: center;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 16px;
   padding: 8px 0;
+  width: 100%;
+  max-width: 450px; /* リストの最大幅を制限 */
+  margin: 0 auto; /* 中央揃え */
+}
+.result-list .weapon-image-container {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+.result-list .result-list-weapon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .result-list .player-label {
   color: var(--muted);
@@ -213,6 +301,10 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
 .result-list .weapon-sub-sp {
   font-size: 0.7em;
   font-weight: 500;
+  text-align: left;
+}
+.result-list .weapon-sub-sp .detail-label {
+  display: none; /* リスト表示ではラベルを非表示 */
 }
 
 .filter-group + .filter-group {
@@ -224,11 +316,13 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
-
-.filter-buttons {
-  display: flex;
-  gap: 6px;
+.filter-header:hover {
+  background-color: rgba(var(--accent-rgb), 0.1);
 }
 
 .btn-filter {
@@ -247,6 +341,7 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   background-color: rgba(255,255,255,.1);
   color: var(--text);
 }
+
 #filter-grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -294,6 +389,38 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   text-overflow: ellipsis;
 }
 
+/* Theme Preview */
+.theme-preview {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--chip-border);
+}
+
+.theme-preview::before,
+.theme-preview::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.theme-preview.light { background-color: #f0f2f8; }
+.theme-preview.light::before { background-color: #007bff; clip-path: circle(35% at 80% 20%); }
+
+.theme-preview.dark { background-color: #0b1020; }
+.theme-preview.dark::before { background-color: #7cf3d2; clip-path: circle(35% at 80% 20%); }
+
+.theme-preview.system::before {
+  background-color: #0b1020;
+}
+.theme-preview.system::after {
+  background-color: #f0f2f8;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
 .layout > aside.card {
   display: flex;
   flex-direction: column;
@@ -302,33 +429,56 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   /* 履歴が約12件を超えたらスクロールするように最大高さを設定 */
   max-height: 760px;
   overflow: auto; /* 内容がはみ出たらスクロール */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.history-batch {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--history-item-bg);
+}
+.history-batch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--card-border);
+}
+.history-batch-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .history-weapon-image {
   width: 48px;
   height: 48px;
   object-fit: contain;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 .history-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--card-border);
-  background: var(--history-item-bg);
 }
 .history-item__main {
   flex-grow: 1;
+  text-align: left;
 }
 .history-item .history-weapon-name { font-weight: 800; }
-.history-item .history-weapon-details { font-size: 12px; }
-.history-item + .history-item { margin-top: 8px; }
-.history-item.new-batch-separator {
-  margin-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 12px;
+.history-item .history-weapon-details {
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px; 
+}
+.history-item .detail-label {
+  width: 60px; /* ラベルの幅を調整 */
 }
 .muted { color: var(--muted); font-size: 12px; }
 .empty { color: var(--muted); text-align:center; padding: 20px 8px; }
@@ -344,9 +494,45 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
 #probTable th, #probTable td {
   padding: 4px 8px;
   text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+#probTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--prob-table-header-bg);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+#probTable tfoot td {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--prob-table-header-bg);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  font-weight: bold;
+}
+#probTable tfoot .prob-value span {
+  color: var(--accent);
+}
+#probTable th.sortable {
+  cursor: pointer;
+}
+.prob-weapon-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.prob-weapon-image {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 #probTable .prob-value {
   text-align: right;
+  width: 130px; /* バーとテキストの幅を確保 */
 }
 #probTable .prob-boost-cell {
   text-align: center;
@@ -374,7 +560,35 @@ h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); letter-spacing: .02em; }
   margin: 0;
 }
 
+.prob-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
 
+.prob-bar {
+  width: 100%;
+  max-width: 60px;
+  height: 8px;
+  background-color: var(--chip-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--chip-border);
+}
+
+.prob-bar-inner {
+  height: 100%;
+  background-color: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.prob-value span {
+  font-variant-numeric: tabular-nums; /* 数字の幅を揃える */
+  font-weight: 600;
+  min-width: 55px; /* "100.000%" が入る幅を確保 */
+  text-align: right;
+}
 
 .prob { font-weight:700; font-variant-numeric: tabular-nums; }
 footer { margin-top: 12px; color: var(--muted); font-size: 12px; }
@@ -425,7 +639,7 @@ a.link { color: var(--accent); text-decoration: none; border-bottom:1px dotted v
 }
 .modal-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 20px; font-weight: normal; letter-spacing: .05em;
 }
 .modal-body {
   padding-top: 16px;
@@ -512,13 +726,25 @@ input:checked + .slider:before {
   border-top: 1px solid var(--card-border);
 }
 
-/* スクロールバーの非表示 */
-.custom-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+/* --- Custom Scrollbar --- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
-.custom-scrollbar::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari, Opera */
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--muted-rgb), 0.4);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--muted-rgb), 0.7);
 }
 
 /* Chat */
@@ -1368,6 +1594,14 @@ body.offline::before {
   width: 100%;
 }
 .dropdown-item:hover { background-color: var(--accent); color: var(--btn-text); }
+
+.credit-item {
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
 
 .pagination-controls .btn-page:disabled {
   opacity: 0.5;
