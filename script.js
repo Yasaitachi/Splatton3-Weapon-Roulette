@@ -101,6 +101,7 @@ const ui = {
   fullscreenBtn: $('#fullscreenBtn'),
   settingsBtn: $('#settingsBtn'),
   settingsModal: $('#settingsModal'),
+  filterGridContainer: $('#filter-grid-container'),
   closeSettingsBtn: $('#closeSettingsBtn'),
   preventSleepToggle: $('#preventSleep'),
   presetMenuBtn: $('#preset-menu-btn'),
@@ -445,6 +446,7 @@ async function handlePostDrawActions(finalResults) {
       <div id="resultName" class="name" data-i18n-key="reset-display-name">${t('reset-display-name')}</div>
       <div id="resultDetails" class="details" data-i18n-key="reset-display-class">${t('reset-display-class')}</div>
     `;
+    ui.spinBtn.querySelector('span').textContent = t('spin');
     const resultImage = $('#resultImage');
     if (resultImage) resultImage.style.display = 'none';
   }, RESET_TIMEOUT_MS);
@@ -456,58 +458,80 @@ async function handlePostDrawActions(finalResults) {
  * @param {Array<Object>} pool - The pool used for the draw.
  */
 async function runRoulette(finalResults, pool) {
-  if (state.running) return;
-  clearTimeout(state.resetTimer);
+  state.running = true; // Set running state
+  setControlsDisabled(true); // Disable controls
+  const progressContainer = $('#multi-draw-progress-container');
+  const progressBar = $('#multi-draw-progress-bar');
 
-  state.running = true;
-  setControlsDisabled(true);
+  try {
+    if (finalResults.length === 1) {
+      const result = finalResults[0];
+      await runSingleAnimation(pool, result);
+      await showFinalResult([result]);
+    } else {
+      // Prepare the list for multiple players
+      ui.resultContainer.innerHTML = `<div class="result-grid"></div>`;
+      progressContainer.style.display = 'block';
+      progressBar.style.width = '0%';
+      const gridEl = ui.resultContainer.querySelector('.result-grid');
 
-  if (finalResults.length === 1) {
-    const result = finalResults[0];
-    await runSingleAnimation(pool, result);
-    await showFinalResult([result]);
-  } else {
-    // Prepare the list for multiple players
-    ui.resultContainer.innerHTML = `<ul class="result-list"></ul>`;
-    const listEl = ui.resultContainer.querySelector('.result-list');
-
-    // Create placeholder list items
-    finalResults.forEach((_, i) => {
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <span class="player-label">${t('player-result-list', { i: i + 1 })}</span>
-        <div class="weapon-image-container"><div class="weapon-image-placeholder"></div></div>
-        <div class="weapon-details">
+      // Create placeholder list items
+      finalResults.forEach((_, i) => {
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.innerHTML = `
+          <span class="player-label">${t('player-result-list', { i: i + 1 })}</span>
+          <div class="weapon-image-container"><div class="weapon-image-placeholder"></div></div>
           <div class="weapon-name">${t('player-draw-wait')}</div>
           <div class="weapon-sub-sp muted">...</div>
-        </div>
-      `;
-      listEl.appendChild(li);
-    });
+        `;
+        gridEl.appendChild(card);
+      });
 
-    // Run animation and update list for each player
-    for (let i = 0; i < finalResults.length; i++) {
-      const result = finalResults[i];
-      const resultItem = listEl.children[i];
-      resultItem.querySelector('.weapon-name').textContent = t('player-draw', { playerNum: i + 1 });
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Run animation and update list for each player
+      for (let i = 0; i < finalResults.length; i++) {
+        const result = finalResults[i];
+        // Highlight current player
+        $$('.result-card').forEach(card => card.classList.remove('active'));
+        const resultItem = gridEl.children[i];
+        resultItem.classList.add('active');
 
-      await runSingleAnimation(pool, result); // This updates the main display
-      await showFinalResultInList(result, resultItem); // Update the specific list item
-      await new Promise(resolve => setTimeout(resolve, 1500));
+        // Reset the main display for the next player's animation.
+        ui.resultContainer.innerHTML = `
+          <div id="resultName" class="name">${t('player-draw-wait')}</div>
+          <div id="resultDetails" class="details">...</div>
+        `;
+
+        resultItem.querySelector('.weapon-name').textContent = t('player-draw', { playerNum: i + 1 });
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        await runSingleAnimation(pool, result); // This updates the main display
+        // Update progress bar after animation
+        progressBar.style.width = `${((i + 1) / finalResults.length) * 100}%`;
+        await showFinalResultInList(result, resultItem); // Update the specific list item
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
     }
-  }
 
-  if (finalResults.length > 0) {
-    await handlePostDrawActions(finalResults);
+    if (finalResults.length > 0) {
+      await handlePostDrawActions(finalResults);
+    }
+  } catch (error) {
+    console.error("An error occurred during the roulette animation:", error);
+    showToast(t('error-failed-draw'), 'error');
+  } finally {
+    state.running = false;
+    setControlsDisabled(false);
+    progressContainer.style.display = 'none';
+    ui.spinBtn.querySelector('span').textContent = t('spin-next');
   }
-
-  state.running = false;
-  setControlsDisabled(false);
 }
 
 async function startSpin() {
   if (state.running) return;
+
+  // Clear any pending reset timer
+  clearTimeout(state.resetTimer);
 
   // Immediately clear the previous result and show a "drawing" state.
   // 直前の結果をクリアし、「抽選中」の状態を表示する。
@@ -519,12 +543,18 @@ async function startSpin() {
   const resultImage = $('#resultImage');
   if (resultImage) resultImage.style.display = 'none';
   updatePool();
-  const finalResults = getDrawResults();
-  if (finalResults) {
-    await runRoulette(finalResults, state.pool);
-  } else {
-    // If the draw fails (e.g., not enough weapons), re-enable controls.
-    // 抽選に失敗した場合（ブキ不足など）、コントロールを再度有効にする。
+
+  ui.spinBtn.querySelector('span').textContent = t('spin');
+  try {
+    const finalResults = getDrawResults();
+    if (finalResults) {
+      await runRoulette(finalResults, state.pool);
+    } else {
+      // If getDrawResults returns null (e.g., not enough weapons), reset the UI.
+      resetAll();
+    }
+  } catch (error) {
+    console.error("An error occurred in startSpin:", error);
     setControlsDisabled(false);
   }
 }
@@ -630,16 +660,17 @@ async function showFinalResult(results) {
  * Updates a specific list item in the multi-player result view.
  * @param {Object} weapon - The weapon object for the result.
  * @param {HTMLElement} listItem - The <li> element to update.
+ * @param {HTMLElement} cardItem - The <div> element for the result card to update.
  */
-async function showFinalResultInList(weapon, listItem) {
-  const nameEl = listItem.querySelector('.weapon-name');
-  const subSpEl = listItem.querySelector('.weapon-sub-sp');
-  const imageContainer = listItem.querySelector('.weapon-image-container');
+async function showFinalResultInList(weapon, cardItem) {
+  const nameEl = cardItem.querySelector('.weapon-name');
+  const subSpEl = cardItem.querySelector('.weapon-sub-sp');
+  const imageContainer = cardItem.querySelector('.weapon-image-container');
 
   nameEl.textContent = getWeaponName(weapon);
-  subSpEl.innerHTML = getWeaponDetailsHtml(weapon);
+  subSpEl.innerHTML = `${t(weapon.sub)} / ${t(weapon.sp)}`;
   imageContainer.innerHTML = weapon.imageId ? `<img src="${IMAGE_PATH_CONFIG.weapon}${weapon.imageId}.png" class="result-list-weapon-image" alt="${getWeaponName(weapon)}">` : '';
-  listItem.classList.add('final-result');
+  cardItem.classList.add('final-result');
 }
 
 /**
@@ -1204,19 +1235,54 @@ function handlePresetMenuClick(e) {
   }
 }
 
+/**
+ * Preloads all necessary images for a smooth user experience.
+ * @returns {Promise<void>} A promise that resolves when all images are loaded.
+ */
+async function preloadImages() {
+  const imageUrls = new Set();
+
+  // Collect weapon images
+  weapons.forEach(w => {
+    if (w.imageId) imageUrls.add(`${IMAGE_PATH_CONFIG.weapon}${w.imageId}.png`);
+  });
+
+  // Collect class, sub, and special images
+  Object.values(CLASS_IMAGES).forEach(img => imageUrls.add(`${IMAGE_PATH_CONFIG.class}${img}`));
+  Object.values(SUB_WEAPON_IMAGES).forEach(img => imageUrls.add(`${IMAGE_PATH_CONFIG.sub}${img}`));
+  Object.values(SPECIAL_WEAPON_IMAGES).forEach(img => imageUrls.add(`${IMAGE_PATH_CONFIG.special}${img}`));
+
+  const promises = [...imageUrls].map(src => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = resolve;
+      img.onerror = () => {
+        // Resolve even on error to not block the app, but log it.
+        console.warn(`Failed to load image: ${src}`);
+        resolve();
+      };
+      img.src = src;
+    });
+  });
+
+  await Promise.all(promises);
+}
+
 // --- Initialization and Event Listener Setup / 初期化とイベントリスナー設定 ------------------------------------
 
 function buildFilterUI() {
   const allSubs = [...new Set(weapons.map(w => w.sub))].filter(Boolean).sort();
   const allSps = [...new Set(weapons.map(w => w.sp))].filter(Boolean).sort();
-  const classFilters = $('#classFilters');
+  const container = ui.filterGridContainer;
   // Note: Text content will be set by updateUIText(). / 注: テキストコンテンツはupdateUIText()によって設定されます
-  classFilters.innerHTML = `
+  container.innerHTML = `
   <div class="filter-group">
-    <div class="filter-header" data-toggle-group="class" data-i18n-title="filter-toggle-all-help">
+    <div class="filter-header" data-collapsible-group="class">
       <strong data-i18n-key="filter-class"></strong>
+      <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
     </div>
     <div class="grid">
+      <button class="btn-filter" data-toggle-group="class" data-i18n-key="filter-toggle" data-i18n-title="filter-toggle-all-help"></button>
       ${[...new Set(weapons.map(w => w.class))].sort().map(cls => { // eslint-disable-line
         const imageName = CLASS_IMAGES[cls];
         const imageTag = imageName ? `<img src="${IMAGE_PATH_CONFIG.class}${imageName}" alt="${cls}">` : '';
@@ -1225,10 +1291,12 @@ function buildFilterUI() {
     </div>
   </div>
   <div class="filter-group">
-    <div class="filter-header" data-toggle-group="sub" data-i18n-title="filter-toggle-all-help">
+    <div class="filter-header" data-collapsible-group="sub">
       <strong data-i18n-key="filter-sub"></strong>
+      <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
     </div>
     <div class="grid">
+      <button class="btn-filter" data-toggle-group="sub" data-i18n-key="filter-toggle" data-i18n-title="filter-toggle-all-help"></button>
       ${allSubs.map(sub => { // eslint-disable-line
         const imageName = SUB_WEAPON_IMAGES[sub];
         const imageTag = imageName ? `<img src="${IMAGE_PATH_CONFIG.sub}${imageName}" alt="${sub}">` : '';
@@ -1237,10 +1305,12 @@ function buildFilterUI() {
     </div>
   </div>
   <div class="filter-group">
-    <div class="filter-header" data-toggle-group="sp" data-i18n-title="filter-toggle-all-help">
+    <div class="filter-header" data-collapsible-group="sp">
       <strong data-i18n-key="filter-special"></strong>
+      <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
     </div>
     <div class="grid">
+      <button class="btn-filter" data-toggle-group="sp" data-i18n-key="filter-toggle" data-i18n-title="filter-toggle-all-help"></button>
       ${allSps.map(sp => { // eslint-disable-line
         const imageName = SPECIAL_WEAPON_IMAGES[sp];
         const imageTag = imageName ? `<img src="${IMAGE_PATH_CONFIG.special}${imageName}" alt="${sp}">` : '';
@@ -1249,6 +1319,44 @@ function buildFilterUI() {
     </div>
   </div>
   `;
+}
+
+function updateToggleAllFiltersButton() {
+  const allFilters = $$('.filter-group');
+  const isAnyCollapsed = Array.from(allFilters).some(el => el.classList.contains('collapsed'));
+  const btn = $('#toggle-all-filters-btn');
+  if (!btn) return;
+
+  const expandSpan = btn.querySelector('[data-action="expand"]');
+  const collapseSpan = btn.querySelector('[data-action="collapse"]');
+
+  if (isAnyCollapsed) {
+    expandSpan.style.display = 'inline';
+    collapseSpan.style.display = 'none';
+    expandSpan.textContent = t('filter-expand-all');
+  } else {
+    expandSpan.style.display = 'none';
+    collapseSpan.style.display = 'inline';
+    collapseSpan.textContent = t('filter-collapse-all');
+  }
+}
+
+function toggleAllFilterGroups(expand) {
+  const allFilters = $$('.filter-group');
+  allFilters.forEach(group => {
+    if (expand) {
+      group.classList.remove('collapsed');
+    } else {
+      group.classList.add('collapsed');
+    }
+  });
+  updateToggleAllFiltersButton();
+  // Save state to localStorage
+  const collapsedStates = Array.from(allFilters).reduce((acc, group) => {
+    acc[group.querySelector('[data-collapsible-group]').dataset.collapsibleGroup] = group.classList.contains('collapsed');
+    return acc;
+  }, {});
+  localStorage.setItem('splaRouletteFilterCollapse', JSON.stringify(collapsedStates));
 }
 
 function setupEventListeners() {
@@ -1330,16 +1438,27 @@ function setupEventListeners() {
   ui.noRepeat.addEventListener('change', handleFilterChange);
 
   // Event delegation for filter controls
-  $('#filter-grid-container').addEventListener('click', e => {
-    const header = e.target.closest('[data-toggle-group]');
-    if (header) {
-      const group = header.dataset.toggleGroup;
+  ui.filterGridContainer.addEventListener('click', e => {
+    const collapsibleHeader = e.target.closest('[data-collapsible-group]');
+    const toggleBtn = e.target.closest('[data-toggle-group]');
+
+    if (collapsibleHeader) {
+      collapsibleHeader.parentElement.classList.toggle('collapsed');
+      updateToggleAllFiltersButton();
+      const groupName = collapsibleHeader.dataset.collapsibleGroup;
+      const isCollapsed = collapsibleHeader.parentElement.classList.contains('collapsed');
+      const savedStates = JSON.parse(localStorage.getItem('splaRouletteFilterCollapse') || '{}');
+      savedStates[groupName] = isCollapsed;
+      localStorage.setItem('splaRouletteFilterCollapse', JSON.stringify(savedStates));
+    }
+
+    if (toggleBtn) {
+      const group = toggleBtn.dataset.toggleGroup;
       const checkboxes = $$(`input[data-${group}]`);
       if (checkboxes.length === 0) return;
 
       const allCurrentlyChecked = checkboxes.every(cb => cb.checked);
       const newCheckedState = !allCurrentlyChecked;
-
       checkboxes.forEach(cb => cb.checked = newCheckedState);
       handleFilterChange(); // Apply changes / 変更を適用
     }
@@ -1400,6 +1519,14 @@ function setupEventListeners() {
       toggleFullscreen();
     }
   });
+
+  const toggleAllFiltersBtn = $('#toggle-all-filters-btn');
+  if (toggleAllFiltersBtn) {
+    toggleAllFiltersBtn.addEventListener('click', () => {
+      const isAnyCollapsed = $$('.filter-group.collapsed').length > 0;
+      toggleAllFilterGroups(isAnyCollapsed);
+    });
+  };
 }
 
 /**
@@ -1452,8 +1579,12 @@ async function countValidWeaponImages() {
   await Promise.all(promises);
   console.log(`正常に読み込めたブキ画像の数: ${validImageCount} / ${weapons.length}`);
 }
-
-function init() {
+/**
+ * Initializes the application.
+ * This function is async to handle asynchronous operations like preloading images.
+ */
+async function init() {
+  document.body.classList.add('loading');
   // --- Version Check and Forced Reload / バージョンチェックと強制リロード ---
   // Compare the locally saved version with the current app version. / ローカルに保存されたバージョンと現在のアプリバージョンを比較
   const savedVersion = localStorage.getItem('splaRouletteVersion');
@@ -1461,14 +1592,16 @@ function init() {
     // If versions differ, clear old settings and history and force a reload
     // to prevent errors from incompatible changes.
     // バージョンが異なる場合、互換性のない変更によるエラーを防ぐため、古い設定と履歴をクリアしてページを強制的にリロードする。
-    console.log(`App updated from ${savedVersion} to ${APP_VERSION}. Clearing data and reloading.`);
+    console.log(`App updated from ${savedVersion} to ${APP_VERSION}. Showing update notes.`);
     localStorage.removeItem('splaRouletteSettings');
     localStorage.removeItem('splaRouletteHistory');
     localStorage.removeItem('splaRoulettePlayerName');
     localStorage.setItem('splaRouletteVersion', APP_VERSION); // Save the new version. / 新しいバージョンを保存
-    location.reload(true); // Reload, ignoring cache. / キャッシュを無視してリロード
-    return; // Abort further initialization because of reload. / リロードするため、以降の初期化処理は中断
+    setLanguage('ja'); // Set language to show notes correctly
+    showUpdateNotes(APP_VERSION);
+    return; // Abort further initialization until user closes the modal and page reloads.
   }
+
   // Save the current version to local storage. / 現在のバージョンをローカルストレージに保存
   localStorage.setItem('splaRouletteVersion', APP_VERSION);
 
@@ -1483,9 +1616,23 @@ function init() {
     return;
   }
 
-  countValidWeaponImages(); // ブキ画像の数をカウント
+  // Preload all images and wait for them to finish.
+  await preloadImages();
+
+  // countValidWeaponImages(); // ブキ画像の数をカウント
   // Add original index to each weapon for default sorting.
   weapons.forEach((w, i) => w.originalIndex = i);
+
+  // Load and apply collapsed states for filters
+  try {
+    const savedStates = JSON.parse(localStorage.getItem('splaRouletteFilterCollapse') || '{}');
+    Object.entries(savedStates).forEach(([groupName, isCollapsed]) => {
+      const groupEl = $(`[data-collapsible-group="${groupName}"]`)?.parentElement;
+      if (groupEl) {
+        groupEl.classList.toggle('collapsed', isCollapsed);
+      }
+    });
+  } catch (e) { console.error('Failed to load filter collapse states', e); }
 
   buildFilterUI();
   setupEventListeners();
@@ -1494,6 +1641,7 @@ function init() {
   loadHistory();
   updatePool();
 
+  updateToggleAllFiltersButton();
   // Wake Lock UI display control. / Wake Lock UIの表示制御
   if ('wakeLock' in navigator && ui.preventSleepToggle) {
     $('#wakeLockSetting').style.display = 'flex';
@@ -1517,6 +1665,10 @@ function init() {
       }).catch(err => console.warn('Cannot monitor battery status.', err));
     }
   }
+
+  // Hide loader and show app content
+  document.body.classList.remove('loading');
+  $('#loader-overlay').classList.remove('visible');
 }
 
-init();
+document.addEventListener('DOMContentLoaded', init);

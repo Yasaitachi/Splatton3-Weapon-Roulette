@@ -1,5 +1,6 @@
 const translations = {
   ja: {
+    'loading-data': 'ブキデータを読み込み中...',
     'or-divider': 'または',
 
     // Realtime
@@ -72,6 +73,7 @@ const translations = {
     // Header & Controls
     'app-title': 'スプラ3 ブキルーレット',
     'spin': '回す',
+    'spin-next': '次の抽選へ',
     'reset': 'リセット',
     'player-count': 'プレイヤー数',
     'no-repeat': 'ブキ重複なし',
@@ -140,6 +142,8 @@ const translations = {
     'filter-special': 'スペシャルウェポン',
     'filter-toggle': 'すべて切り替え',
     'filter-toggle-all-help': 'クリックして全て選択/解除',
+    'filter-expand-all': 'すべて展開',
+    'filter-collapse-all': 'すべて折りたたむ',
     'filter-collection': 'コレクション',
 
     // History
@@ -335,8 +339,20 @@ const translations = {
     'credits-title': 'クレジット',
     'credits-font-heading': '見出しフォント',
     'credits-font-body': '本文フォント',
+
+    // Update Notes
+    'update-notes-title': 'バージョン {version} の新機能',
+    'update-notes-close': '閉じる',
+    'update-notes-v1.1.0': `
+    * **UIデザインの刷新**: 全体的なレイアウト、配色、角の丸みや影などを調整し、よりモダンで洗練された外観にしました。
+    * **フィルター機能の強化**: 各フィルターグループ（ブキ種、サブ、スペシャル）に「すべて選択/解除」ボタンを追加し、一括操作を可能にしました。
+    * **操作性の向上**: ルーレット回転中に他の操作ができないことを視覚的に分かりやすくするため、操作不能なボタンが半透明になるようにしました。
+    * **フィルターの折りたたみ**: 各フィルターグループを折りたためるようにし、画面をすっきりと使えるようになりました。この状態は記憶されます。
+    * **※これまで使用されていた保存データは不具合が生じる可能性があるため、リセットされました。** *
+    `,
   },
     en: {
+    'loading-data': 'Loading weapon data...',
     'or-divider': 'or',
 
     // Realtime
@@ -407,6 +423,7 @@ const translations = {
     // Header & Controls
     'app-title': 'Splatoon 3 Weapon Roulette',
     'spin': 'Spin',
+    'spin-next': 'Spin Next',
     'reset': 'Reset',
     'player-count': 'Players',
     'no-repeat': 'No Duplicates',
@@ -477,6 +494,8 @@ const translations = {
     'filter-special': 'Special Weapon',
     'filter-toggle': 'Toggle All',
     'filter-toggle-all-help': 'Click to select/deselect all',
+    'filter-expand-all': 'Expand All',
+    'filter-collapse-all': 'Collapse All',
     'filter-collection': 'Collection',
 
     // History
@@ -672,6 +691,16 @@ const translations = {
     'credits-title': 'Credits',
     'credits-font-heading': 'Heading Font',
     'credits-font-body': 'Body Font',
+
+    // Update Notes
+    'update-notes-title': 'What\'s New in Version {version}',
+    'update-notes-close': 'Close',
+    'update-notes-v1.2.5': `
+* **UI Redesign**: Overhauled the overall layout, color scheme, border radius, and shadows for a more modern and sophisticated look.
+* **Enhanced Filter Functionality**: Added "Toggle All" buttons to each filter group (Class, Sub, Special) for bulk operations.
+* **Improved Usability**: Visually clarified that controls are disabled during the roulette spin by making them semi-transparent.
+* **Collapsible Filters**: Each filter group can now be collapsed to save screen space. The collapsed state is saved.
+    `,
 
   }
 };

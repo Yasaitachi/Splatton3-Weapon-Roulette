@@ -27,16 +27,19 @@
 
     <div class="main-controls card">
       <div class="main-controls-left">
-        <div class="pill host-control">
-          <label for="playerCount" style="margin-right: 8px; cursor: pointer;" data-i18n-key="player-count">プレイヤー数</label>
-          <input id="playerCount" type="number" min="1" max="8" value="1">
+        <div class="control-group">
+          <div class="pill host-control">
+            <label for="playerCount" data-i18n-key="player-count">プレイヤー数</label>
+            <input id="playerCount" type="number" min="1" max="8" value="1">
+          </div>
+          <button id="spinBtn" class="btn host-control" data-i18n-aria-label="spin"><span data-i18n-key="spin">回す</span></button>
         </div>
-        <button id="spinBtn" class="btn host-control" data-i18n-aria-label="spin" data-i18n-key="spin">回す</button>
-        <label class="switch pill host-control" data-i18n-title="no-repeat-title" title="有効にすると、一度出たブキは履歴をリセットするまで抽選対象から除外されます">
-          <input id="noRepeat" type="checkbox" />
-          <span data-i18n-key="no-repeat">重複なし</span>
-        </label>
-        <button id="resetBtn" class="btn danger host-control" data-i18n-aria-label="reset" data-i18n-key="reset">リセット</button>
+        <div class="control-group">
+          <button id="resetBtn" class="btn danger host-control" data-i18n-aria-label="reset" data-i18n-key="reset">リセット</button>
+          <label class="chip host-control" data-i18n-title="no-repeat-title" title="有効にすると、一度出たブキは履歴をリセットするまで抽選対象から除外されます">
+            <input id="noRepeat" type="checkbox" /><span data-i18n-key="no-repeat">重複なし</span>
+          </label>
+        </div>
       </div>
       <div class="main-controls-right">
         <button id="settingsBtn" class="btn secondary icon" data-i18n-title="settings">
@@ -49,6 +52,9 @@
     <div class="layout">
       <section class="card" aria-live="polite">
         <div class="display">
+          <div id="multi-draw-progress-container" style="display: none;">
+            <div id="multi-draw-progress-bar"></div>
+          </div>
           <div id="resultContainer" class="result-container">
             <img id="resultImage" class="weapon-image" src="" alt="" style="display: none;">
             <div id="resultName" class="name" data-i18n-key="reset-display-name">準備OK</div>
@@ -69,15 +75,17 @@
         <div id="filter-container" class="card" style="margin-top:12px">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
             <strong data-i18n-key="filter-title">ブキ絞り込み</strong>
-            <div id="preset-dropdown-container" class="dropdown-container">
-              <button id="preset-menu-btn" class="btn secondary" data-i18n-key="settings-presets-title" style="padding: 4px 10px; font-size: 13px;"></button>
-              <div id="preset-menu" class="dropdown-menu"></div>
+            <div class="setting-control">
+              <button id="toggle-all-filters-btn" class="btn secondary" style="padding: 4px 10px; font-size: 13px;">
+                <span data-action="expand">すべて展開</span><span data-action="collapse" style="display:none;">すべて折りたたむ</span>
+              </button>
+              <div id="preset-dropdown-container" class="dropdown-container">
+                <button id="preset-menu-btn" class="btn secondary" data-i18n-key="settings-presets-title" style="padding: 4px 10px; font-size: 13px;"></button>
+                <div id="preset-menu" class="dropdown-menu"></div>
+              </div>
             </div>
           </div>
-          <div id="filter-grid-container" class="custom-scrollbar">
-            <div id="classFilters"></div>
-            <div id="paletteFilters"></div>
-          </div>
+          <div id="filter-grid-container" class="custom-scrollbar"></div>
         </div>
       </section>
 
@@ -287,9 +295,9 @@
   <div id="toast-container"></div>
 
   <!-- Loading Overlay -->
-  <div id="loader-overlay" class="loader-overlay">
+  <div id="loader-overlay" class="loader-overlay visible">
     <div class="loader-spinner"></div>
-    <div id="loader-text" class="loader-text"></div>
+    <div id="loader-text" class="loader-text" data-i18n-key="loading-data"></div>
   </div>
 </body>
 </html>
