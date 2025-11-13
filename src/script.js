@@ -25,10 +25,10 @@ const ICONS = {
 };
 
 const IMAGE_PATH_CONFIG = {
-  weapon: 'images/weapons/',
-  sub: 'images/sub/',
-  special: 'images/special/',
-  class: 'images/class/',
+  weapon: 'public/images/weapons/',
+  sub: 'public/images/sub/',
+  special: 'public/images/special/',
+  class: 'public/images/class/',
 };
 
 const $ = (sel) => document.querySelector(sel);
