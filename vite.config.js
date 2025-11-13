@@ -3,9 +3,8 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    host: true,                       // 外部アクセス許可
-    port: 5173,                       // 任意のポート
-    allowedHosts: ['.trycloudflare.com'] // Cloudflared経由のアクセスを許可
+  base: "./",  // Firebaseでは相対パス必須
+  build: {
+    outDir: "dist"  // デフォルトでOK
   }
 })
