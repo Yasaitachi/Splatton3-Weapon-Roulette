@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'SplatoonFont'; /* 見出し用のフォント名を定義 */
-  src: url('/fonts/ikamodoki1_0.ttf') format('truetype');
+  src: url('public/fonts/ikamodoki1_0.ttf') format('truetype');
   /* ひらがな・カタカナ・一部記号を担当 */
   unicode-range: U+3040-309F, U+30A0-30FF, U+FF01-FF5E, U+25CB, U+25CF, U+2010-2026;
   font-weight: normal;
@@ -10,7 +10,7 @@
 
 @font-face {
   font-family: 'SplatoonFont'; /* 同じフォント名で見出し用フォントを定義 */
-  src: url('/fonts/Paintball_Beta_3.ttf') format('truetype');
+  src: url('public/fonts/Paintball_Beta_3.ttf') format('truetype');
   /* 英数字・基本記号を担当 */
   unicode-range: U+0020-007E;
   font-weight: normal;
@@ -18,25 +18,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'BodyFont'; /* 本文用のフォント名を定義 */
-  src: url('/fonts/log-ran-punti-v2.ttf') format('truetype');
-  /* 漢字・ひらがな・カタカナなどを担当 */
-  unicode-range: U+3040-30FF, U+4E00-9FFF, U+FF01-FF5E;
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'BodyFont'; /* 同じフォント名で定義 */
-  src: url('/fonts/MPlusRounded1c-Regular.ttf') format('truetype');
-  /* 英数字を担当 */
-  unicode-range: U+0020-007E;
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
 :root, html[data-theme="dark"] {
   --bg: #0f101c;
   --panel: #141a33;
