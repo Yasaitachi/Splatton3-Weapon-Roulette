@@ -1,4 +1,4 @@
-const translations = {
+export const translations = {
   ja: {
     'loading-data': 'ブキデータを読み込み中...',
     'or-divider': 'または',

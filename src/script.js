@@ -1,4 +1,7 @@
 // --- Global Variables / グローバル変数 ---------------------------------------------------------
+import { weapons } from './Weapondata.js';
+import { translations } from './translatedata.js';
+
 const APP_VERSION = '1.0.0'; // Application version. Change this number when updating. / アプリケーションのバージョン。更新時にこの数値を変更する。
 
 const RESET_TIMEOUT_MS = 10000; // 10 seconds / 10秒
@@ -25,10 +28,10 @@ const ICONS = {
 };
 
 const IMAGE_PATH_CONFIG = {
-  weapon: 'images/weapons/',
-  sub: 'images/sub/',
-  special: 'images/special/',
-  class: 'images/class/',
+  weapon: `${import.meta.env.BASE_URL}images/weapons/`,
+  sub: `${import.meta.env.BASE_URL}images/sub/`,
+  special: `${import.meta.env.BASE_URL}images/special/`,
+  class: `${import.meta.env.BASE_URL}images/class/`,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -1282,10 +1285,7 @@ function updateUIText() {
     const key = el.dataset.i18nKey;
     const target = el.dataset.i18nTarget || 'textContent';
 
-    // ボタン（子要素を持たない）の場合は、spanを内部に作成してテキストを設定
-    if (el.tagName === 'BUTTON' && el.children.length === 0) {
-      el.innerHTML = `<span>${t(key)}</span>`;
-    } else if (target === 'innerHTML') {
+    if (target === 'innerHTML') {
       el.innerHTML = t(key);
     } else {
       el.textContent = t(key);
@@ -1533,6 +1533,7 @@ function buildFilterUI() {
 
 function setupEventListeners() {
   ui.spinBtn.addEventListener('click', startSpin);
+  // ui.spinBtn.addEventListener('click', simpleSpin); // startSpinの代わりにsimpleSpinを呼び出す
   $('#resetBtn').addEventListener('click', resetAll);
   ui.playerCountInput.addEventListener('change', saveSettings);
 
@@ -1759,7 +1760,7 @@ async function init() {
     localStorage.removeItem('splaRouletteHistory');
     localStorage.removeItem('splaRoulettePlayerName');
     localStorage.setItem('splaRouletteVersion', APP_VERSION); // Save the new version. / 新しいバージョンを保存
-    showUpdateNotes(APP_VERSION);
+    // showUpdateNotes(APP_VERSION);
     return; // Abort further initialization until user closes the modal and page reloads.
   }
 
