@@ -1,15 +1,14 @@
-import { defineConfig } from "vite";
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-  root: ".",
-  publicDir: "public",
-  base: "/",
-  assetsInclude: ["**/*.ttf"],
+  root: '.', // プロジェクトのルートディレクトリ
+  base: './', // 相対パスでビルド
+  publicDir: 'public', // 静的ファイル（画像・フォント・faviconなど）
   build: {
-    outDir: "dist",
+    outDir: 'dist', // ビルド出力先
     emptyOutDir: true,
     rollupOptions: {
-      input: "./index.html"
+      input: 'index.html' // エントリーポイント
     }
   }
 });
