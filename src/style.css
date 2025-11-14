@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'SplatoonFont'; /* 見出し用のフォント名を定義 */
-  src: url('public/fonts/ikamodoki1_0.ttf') format('truetype');
+  src: url('/fonts/ikamodoki1_0.ttf') format('truetype');
   /* ひらがな・カタカナ・一部記号を担当 */
   unicode-range: U+3040-309F, U+30A0-30FF, U+FF01-FF5E, U+25CB, U+25CF, U+2010-2026;
   font-weight: normal;
@@ -10,7 +10,7 @@
 
 @font-face {
   font-family: 'SplatoonFont'; /* 同じフォント名で見出し用フォントを定義 */
-  src: url('public/fonts/Paintball_Beta_3.ttf') format('truetype');
+  src: url('/fonts/Paintball_Beta_3.ttf') format('truetype');
   /* 英数字・基本記号を担当 */
   unicode-range: U+0020-007E;
   font-weight: normal;

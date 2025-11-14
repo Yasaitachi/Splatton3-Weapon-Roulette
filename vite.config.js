@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   root: '.', // プロジェクトのルートディレクトリ
-  base: './', // 相対パスでビルド
+  base: '/', // ルートからのパスでビルド
   publicDir: 'public', // 静的ファイル（画像・フォント・faviconなど）
   build: {
     outDir: 'dist', // ビルド出力先
